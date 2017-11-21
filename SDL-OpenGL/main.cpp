@@ -25,6 +25,7 @@ SDL_Window* gWindow = NULL;
 SDL_GLContext gContext;
 GLuint gProgramID = 0;
 GLint gVertexPos2DLocation = -1;
+GLint gColorAttribLocation = -1;
 GLuint gVBO = 0;
 GLuint gIBO = 0;
 GLuint gVAO = 0;
@@ -149,15 +150,17 @@ bool initGL()
 			else {
 				//Get vertex attribute location
 				glBindFragDataLocation(gProgramID, 0, "outColor");
-				gVertexPos2DLocation = glGetAttribLocation(gProgramID, "position");
+				gVertexPos2DLocation = glGetAttribLocation(gProgramID, "position");	
+				gColorAttribLocation = glGetAttribLocation(gProgramID, "color");
+
 				if (gVertexPos2DLocation != -1) {
 					//Initialize clear color
 					glClearColor(1.f, 1.f, 1.f, 1.f);
 					//VBO data
 					float vertices[] = {
-						0.0f,  0.5f, // Vertex 1 (X, Y)
-						0.5f, -0.5f, // Vertex 2 (X, Y)
-						-0.5f, -0.5f  // Vertex 3 (X, Y)
+						0.0f,  0.5f, 1.0f, 0.0f, 0.0f, // Vertex 1: Red
+						0.5f, -0.5f, 0.0f, 1.0f, 0.0f, // Vertex 2: Green
+						-0.5f, -0.5f, 0.0f, 0.0f, 1.0f  // Vertex 3: Blue
 					};
 					/*GLfloat vertices[] =
 					{
@@ -264,7 +267,9 @@ void render()
 	glEnableVertexAttribArray(gVertexPos2DLocation);
 	//Set vertex data
 	glBindBuffer(GL_ARRAY_BUFFER, gVBO);
-	glVertexAttribPointer(gVertexPos2DLocation, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), NULL);
+	glVertexAttribPointer(gVertexPos2DLocation, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), NULL);
+	glEnableVertexAttribArray(gColorAttribLocation);
+	glVertexAttribPointer(gColorAttribLocation, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2 * sizeof(float)));
 	//Set index data and render
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIBO);
 	glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, NULL);
@@ -272,6 +277,7 @@ void render()
 	//glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	//Disable vertex position
 	glDisableVertexAttribArray(gVertexPos2DLocation);
+	glDisableVertexAttribArray(gColorAttribLocation);
 	//Unbind program
 	glUseProgram(NULL);
 }

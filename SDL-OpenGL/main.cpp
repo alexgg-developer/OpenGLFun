@@ -316,64 +316,7 @@ int main(int, char**)
 		SDL_GL_SwapWindow(gWindow);
 	}
 	close();
+	return 0;
 
-	/*SDL_Renderer *ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-	if (ren == nullptr) {
-	SDL_DestroyWindow(win);
-	logSDLError(std::cout, "CreateRenderer");
-	SDL_Quit();
-	return 1;
-	}*/
-
-
-	// Create Vertex Array Object
-	//GLuint vao;
-	//glGenVertexArrays(1, &vao);
-	//glBindVertexArray(vao);
-
-	/*std::string imagePath = "Resources/example.bmp";
-	SDL_Surface *bmp = SDL_LoadBMP(imagePath.c_str());
-	if (bmp == nullptr) {
-	SDL_DestroyRenderer(ren);
-	SDL_DestroyWindow(win);
-	logSDLError(std::cout, "SDL_LoadBMP");
-	SDL_Quit();
-	return 1;
-	}
-
-	SDL_Texture *tex = SDL_CreateTextureFromSurface(ren, bmp);
-	SDL_FreeSurface(bmp);
-	if (tex == nullptr) {
-	SDL_DestroyRenderer(ren);
-	SDL_DestroyWindow(win);
-	logSDLError(std::cout, "SDL_CreateTextureFromSurface");
-	SDL_Quit();
-	return 1;
-	}*/
-
-	/*SDL_Event windowEvent;
-	while (true)
-	{
-	if (SDL_PollEvent(&windowEvent))
-	{
-	if (windowEvent.type == SDL_QUIT) break;
-	if (windowEvent.type == SDL_KEYUP &&
-	windowEvent.key.keysym.sym == SDLK_ESCAPE) break;
-	}
-	glDrawArrays(GL_TRIANGLES, 0, 3);
-	SDL_GL_SwapWindow(win);
-	}
-	//SDL_DestroyTexture(tex);
-	SDL_DestroyRenderer(ren);
-	SDL_DestroyWindow(win);
-	SDL_GL_DeleteContext(context);
-	SDL_Quit();
-
-
-	glDeleteProgram(shaderProgram);
-	glDeleteShader(fragmentShader);
-	glDeleteShader(vertexShader);
-	glDeleteBuffers(1, &vbo);
-	glDeleteVertexArrays(1, &vao);
-	return 0;*/
+	
 }

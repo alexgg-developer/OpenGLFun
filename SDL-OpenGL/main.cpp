@@ -6,6 +6,7 @@
 #include <string>
 #include <sstream>
 #include <fstream>
+#include <chrono>
 
 using namespace std;
 
@@ -27,6 +28,7 @@ GLint gVertexPos2DLocation = -1;
 GLuint gVBO = 0;
 GLuint gIBO = 0;
 GLuint gVAO = 0;
+auto t_start = std::chrono::high_resolution_clock::now();
 
 /**
 * Log an SDL error with some error message to the output stream of our choice
@@ -44,6 +46,8 @@ void checkErrorsShader(GLuint shader)
 	glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
 	int infoLogLength = 0;
 	int maxLength = infoLogLength;
+	//char buffer[512];
+	//glGetShaderInfoLog(Shader, 512, NULL, buffer);
 	//Get info string length
 	glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &maxLength);
 	char* infoLog = new char[maxLength];
@@ -52,6 +56,7 @@ void checkErrorsShader(GLuint shader)
 	std::cout << infoLog << std::endl;
 	std::cout << "--- --- ---" << std::endl;
 	delete[] infoLog;
+
 }
 
 
@@ -147,7 +152,7 @@ bool initGL()
 				gVertexPos2DLocation = glGetAttribLocation(gProgramID, "position");
 				if (gVertexPos2DLocation != -1) {
 					//Initialize clear color
-					glClearColor(1.f, 0.f, 0.f, 1.f);
+					glClearColor(1.f, 1.f, 1.f, 1.f);
 					//VBO data
 					/*float vertices[] = {
 					0.0f,  0.5f, // Vertex 1 (X, Y)
@@ -173,6 +178,7 @@ bool initGL()
 					glGenBuffers(1, &gIBO);
 					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIBO);
 					glBufferData(GL_ELEMENT_ARRAY_BUFFER, 4 * sizeof(GLuint), indexData, GL_STATIC_DRAW);
+
 				}
 			}
 		}
@@ -250,6 +256,10 @@ void render()
 	glClear(GL_COLOR_BUFFER_BIT);
 	//Bind program
 	glUseProgram(gProgramID);
+	GLint uniColor = glGetUniformLocation(gProgramID, "inColor");
+	auto t_now = std::chrono::high_resolution_clock::now();
+	float time = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
+	glUniform3f(uniColor, (sin(time * 4.0f) + 1.0f) / 2.0f, (cos(time * 4.0f) + 1.0f) / 2.0f, (sin(time * 4.0f) + 1.0f) / 2.0f);
 	//Enable vertex position
 	glEnableVertexAttribArray(gVertexPos2DLocation);
 	//Set vertex data
@@ -258,6 +268,7 @@ void render()
 	//Set index data and render
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIBO);
 	glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_INT, NULL);
+	//glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	//Disable vertex position
 	glDisableVertexAttribArray(gVertexPos2DLocation);
 	//Unbind program

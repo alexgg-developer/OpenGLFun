@@ -154,30 +154,30 @@ bool initGL()
 					//Initialize clear color
 					glClearColor(1.f, 1.f, 1.f, 1.f);
 					//VBO data
-					/*float vertices[] = {
-					0.0f,  0.5f, // Vertex 1 (X, Y)
-					0.5f, -0.5f, // Vertex 2 (X, Y)
-					-0.5f, -0.5f  // Vertex 3 (X, Y)
-					};*/
-					GLfloat vertices[] =
+					float vertices[] = {
+						0.0f,  0.5f, // Vertex 1 (X, Y)
+						0.5f, -0.5f, // Vertex 2 (X, Y)
+						-0.5f, -0.5f  // Vertex 3 (X, Y)
+					};
+					/*GLfloat vertices[] =
 					{
 						-0.5f, -0.5f,
 						0.5f, -0.5f,
 						0.5f,  0.5f,
 						-0.5f,  0.5f
-					};
+					};*/
 					//IBO data
-					GLuint indexData[] = { 0, 1, 2, 3 };					
+					GLuint indexData[] = { 0, 1, 2 };					
 					glGenVertexArrays(1, &gVAO);
 					glBindVertexArray(gVAO);
 					//Create VBO
 					glGenBuffers(1, &gVBO);
 					glBindBuffer(GL_ARRAY_BUFFER, gVBO);
-					glBufferData(GL_ARRAY_BUFFER, 2 * 4 * sizeof(GLfloat), vertices, GL_STATIC_DRAW);
+					glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 					//Create IBO
 					glGenBuffers(1, &gIBO);
 					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIBO);
-					glBufferData(GL_ELEMENT_ARRAY_BUFFER, 4 * sizeof(GLuint), indexData, GL_STATIC_DRAW);
+					glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indexData), indexData, GL_STATIC_DRAW);
 
 				}
 			}
@@ -267,7 +267,8 @@ void render()
 	glVertexAttribPointer(gVertexPos2DLocation, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(GLfloat), NULL);
 	//Set index data and render
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIBO);
-	glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_INT, NULL);
+	glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, NULL);
+	//glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_INT, NULL);
 	//glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	//Disable vertex position
 	glDisableVertexAttribArray(gVertexPos2DLocation);

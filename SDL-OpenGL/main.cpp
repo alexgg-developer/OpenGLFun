@@ -26,9 +26,11 @@ SDL_GLContext gContext;
 GLuint gProgramID = 0;
 GLint gVertexPos2DLocation = -1;
 GLint gColorAttribLocation = -1;
+GLint gTextureAttribLocation = -1;
 GLuint gVBO = 0;
 GLuint gIBO = 0;
 GLuint gVAO = 0;
+GLuint gTexture = 0;
 auto t_start = std::chrono::high_resolution_clock::now();
 
 /**
@@ -39,6 +41,18 @@ auto t_start = std::chrono::high_resolution_clock::now();
 void logSDLError(std::ostream &os, const std::string &msg)
 {
 	os << msg << " error: " << SDL_GetError() << std::endl;
+}
+
+void loadTexture(const std::string &path)
+{
+	glGenTextures(1, &gTexture);
+	glBindTexture(GL_TEXTURE_2D, gTexture);
+	// Black/white checkerboard
+	float pixels[] = {
+		0.0f, 0.0f, 0.0f,   1.0f, 1.0f, 1.0f,
+		1.0f, 1.0f, 1.0f,   0.0f, 0.0f, 0.0f
+	};
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 2, 2, 0, GL_RGB, GL_FLOAT, pixels);
 }
 
 void checkErrorsShader(GLuint shader)
@@ -99,11 +113,25 @@ bool initGL()
 {
 	//Success flag
 	bool success = true;
+	//Init textures
+	
+	loadTexture("");
+	glGenerateMipmap(GL_TEXTURE_2D);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	//float color[] = { 1.0f, 0.0f, 0.0f, 1.0f };
+	//glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, color);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	
+	
 	//Generate program
 	gProgramID = glCreateProgram();
 	//Create vertex shader
 	GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	string strVertexSource = readShader("Resources/shaders/simple.vert");
+	string strVertexSource = readShader("Resources/shaders/texture.vert");
 	const char* vertexSource = strVertexSource.c_str();
 	glShaderSource(vertexShader, 1, &vertexSource, NULL);
 	glCompileShader(vertexShader);
@@ -115,13 +143,12 @@ bool initGL()
 		checkErrorsShader(vertexShader);
 		success = false;
 	}
-	else
-	{
+	else {
 		//Attach vertex shader to program
 		glAttachShader(gProgramID, vertexShader);
 		//Create fragment shader
 		GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-		string strFragmentSource = readShader("Resources/shaders/simple.frag");
+		string strFragmentSource = readShader("Resources/shaders/texture.frag");
 		const char* fragmentSource = strFragmentSource.c_str();
 		glShaderSource(fragmentShader, 1, &fragmentSource, NULL);
 		//Compile fragment source
@@ -152,15 +179,17 @@ bool initGL()
 				glBindFragDataLocation(gProgramID, 0, "outColor");
 				gVertexPos2DLocation = glGetAttribLocation(gProgramID, "position");	
 				gColorAttribLocation = glGetAttribLocation(gProgramID, "color");
+				gTextureAttribLocation = glGetAttribLocation(gProgramID, "inTexcoord");
 
 				if (gVertexPos2DLocation != -1) {
 					//Initialize clear color
-					glClearColor(1.f, 1.f, 1.f, 1.f);
+					glClearColor(0.f, 1.f, 1.f, 1.f);
 					//VBO data
 					float vertices[] = {
-						0.0f,  0.5f, 1.0f, 0.0f, 0.0f, // Vertex 1: Red
-						0.5f, -0.5f, 0.0f, 1.0f, 0.0f, // Vertex 2: Green
-						-0.5f, -0.5f, 0.0f, 0.0f, 1.0f  // Vertex 3: Blue
+						-0.5f,  0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, // Top-left
+						0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, // Top-right
+						0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, // Bottom-right
+						-0.5f, -0.5f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f  // Bottom-left
 					};
 					/*GLfloat vertices[] =
 					{
@@ -170,7 +199,10 @@ bool initGL()
 						-0.5f,  0.5f
 					};*/
 					//IBO data
-					GLuint indexData[] = { 0, 1, 2 };					
+					GLuint indexData[] = {
+						0, 1, 2,
+						2, 3, 0
+					};					
 					glGenVertexArrays(1, &gVAO);
 					glBindVertexArray(gVAO);
 					//Create VBO
@@ -234,13 +266,10 @@ bool init()
 				if (glewError != GLEW_OK) {
 					printf("Error initializing GLEW! %s\n", glewGetErrorString(glewError));
 				}
-
 				//Use Vsync
-				if (SDL_GL_SetSwapInterval(1) < 0)
-				{
+				if (SDL_GL_SetSwapInterval(1) < 0) {
 					printf("Warning: Unable to set VSync! SDL Error: %s\n", SDL_GetError());
 				}
-
 				//Initialize OpenGL
 				if (!initGL()) {
 					printf("Unable to initialize OpenGL!\n");
@@ -259,25 +288,28 @@ void render()
 	glClear(GL_COLOR_BUFFER_BIT);
 	//Bind program
 	glUseProgram(gProgramID);
-	GLint uniColor = glGetUniformLocation(gProgramID, "inColor");
+	/*GLint uniColor = glGetUniformLocation(gProgramID, "inColor");
 	auto t_now = std::chrono::high_resolution_clock::now();
 	float time = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();
-	glUniform3f(uniColor, (sin(time * 4.0f) + 1.0f) / 2.0f, (cos(time * 4.0f) + 1.0f) / 2.0f, (sin(time * 4.0f) + 1.0f) / 2.0f);
+	glUniform3f(uniColor, (sin(time * 4.0f) + 1.0f) / 2.0f, (cos(time * 4.0f) + 1.0f) / 2.0f, (sin(time * 4.0f) + 1.0f) / 2.0f);*/
 	//Enable vertex position
 	glEnableVertexAttribArray(gVertexPos2DLocation);
 	//Set vertex data
 	glBindBuffer(GL_ARRAY_BUFFER, gVBO);
-	glVertexAttribPointer(gVertexPos2DLocation, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), NULL);
+	glVertexAttribPointer(gVertexPos2DLocation, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(GLfloat), NULL);
 	glEnableVertexAttribArray(gColorAttribLocation);
-	glVertexAttribPointer(gColorAttribLocation, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(2 * sizeof(float)));
+	glVertexAttribPointer(gColorAttribLocation, 3, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)(2 * sizeof(float)));
+	glEnableVertexAttribArray(gTextureAttribLocation);
+	glVertexAttribPointer(gTextureAttribLocation, 2, GL_FLOAT, GL_FALSE, 7 * sizeof(float), (void*)(5 * sizeof(float)));
 	//Set index data and render
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIBO);
-	glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, NULL);
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, NULL);
 	//glDrawElements(GL_TRIANGLE_FAN, 4, GL_UNSIGNED_INT, NULL);
 	//glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 	//Disable vertex position
 	glDisableVertexAttribArray(gVertexPos2DLocation);
 	glDisableVertexAttribArray(gColorAttribLocation);
+	glDisableVertexAttribArray(gTextureAttribLocation);
 	//Unbind program
 	glUseProgram(NULL);
 }

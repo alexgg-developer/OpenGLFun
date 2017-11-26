@@ -57,6 +57,7 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="SDL2_Image_x86.props" />
     <Import Project="SDL2_x86.props" />
     <Import Project="GLEW_x86.props" />
   </ImportGroup>
@@ -82,8 +83,11 @@
       <AdditionalDependencies>Opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>if not exist "$(OutDir)Resources" mkdir "$(OutDir)Resources"
-xcopy /e /i /y "$(ProjectDir)Resources\*" "$(OutDir)\Resources"</Command>
+      <Command>
+if not exist "$(OutDir)Resources" mkdir "$(OutDir)Resources"
+xcopy /e /i /y "$(ProjectDir)Resources\*" "$(OutDir)\Resources"
+xcopy /e /i /y "$(SolutionDir)libs\SDL\SDL2-2.0.7\lib\x86\*.dll" "$(OutDir)"
+xcopy /e /i /y "$(SolutionDir)libs\SDL\SDL2_image-2.0.2\lib\x86\*.dll" "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

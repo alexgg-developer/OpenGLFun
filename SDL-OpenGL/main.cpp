@@ -7,12 +7,13 @@
 #include <sstream>
 #include <fstream>
 #include <chrono>
+#include <SDL_image.h>
 
 using namespace std;
 
 void logSDLError(std::ostream &os, const std::string &msg);
 void checkErrorsShader(GLuint shader);
-string  readShader(std::string path);
+string  readShader(std::string path); 
 void printProgramLog(GLuint program);
 bool initGL();
 void handleKeys(unsigned char key, int x, int y);
@@ -43,16 +44,45 @@ void logSDLError(std::ostream &os, const std::string &msg)
 	os << msg << " error: " << SDL_GetError() << std::endl;
 }
 
-void loadTexture(const std::string &path)
+bool loadTexture(const std::string &path)
 {
-	glGenTextures(1, &gTexture);
+	/*glGenTextures(1, &gTexture);
 	glBindTexture(GL_TEXTURE_2D, gTexture);
 	// Black/white checkerboard
 	float pixels[] = {
 		0.0f, 0.0f, 0.0f,   1.0f, 1.0f, 1.0f,
 		1.0f, 1.0f, 1.0f,   0.0f, 0.0f, 0.0f
 	};
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 2, 2, 0, GL_RGB, GL_FLOAT, pixels);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 2, 2, 0, GL_RGB, GL_FLOAT, pixels);*/
+	bool success = true;
+	int imgFlags = IMG_INIT_PNG | IMG_INIT_JPG;
+	if (!(IMG_Init(imgFlags) & imgFlags)) {
+		std::cout << "SDL_image could not initialize! SDL_image Error: " << IMG_GetError() << std::endl;
+		success = false;
+	}
+	else {
+		SDL_Surface* textureSurface = IMG_Load(path.c_str());
+		if (textureSurface == nullptr) {
+			std::cout << "Unable to load image " << path.c_str() << " SDL Error: " << SDL_GetError() << std::endl;
+			success = false;
+		}
+		else {
+			//SDL_SetColorKey(textureSurface, SDL_TRUE, SDL_MapRGB(textureSurface->format, colorKey.x, colorKey.y, colorKey.z));
+			glGenTextures(1, &gTexture);
+			glBindTexture(GL_TEXTURE_2D, gTexture);
+			//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureSurface->w, textureSurface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureSurface->pixels);
+			//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureSurface->w, textureSurface->h, 0, GL_RGB, GL_UNSIGNED_BYTE, textureSurface->pixels);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureSurface->w, textureSurface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureSurface->pixels);
+			//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureSurface->w, textureSurface->h, 0, GL_BGR, GL_UNSIGNED_BYTE, textureSurface->pixels);
+			/*glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);*/
+			//glBindTexture(GL_TEXTURE_2D, 0);
+		}
+	}
+
+	return success;
 }
 
 void checkErrorsShader(GLuint shader)
@@ -115,16 +145,23 @@ bool initGL()
 	bool success = true;
 	//Init textures
 	
-	loadTexture("");
-	glGenerateMipmap(GL_TEXTURE_2D);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	//loadTexture("Resources/imgs/example.bmp");
+	loadTexture("Resources/imgs/dices.png");
+	//glGenerateMipmap(GL_TEXTURE_2D);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	//float color[] = { 1.0f, 0.0f, 0.0f, 1.0f };
 	//glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, color);
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+
 	
 	
 	//Generate program
@@ -286,6 +323,8 @@ void render()
 {
 	//Clear color buffer
 	glClear(GL_COLOR_BUFFER_BIT);
+
+	//glBindTexture(GL_TEXTURE_2D, gTexture);
 	//Bind program
 	glUseProgram(gProgramID);
 	/*GLint uniColor = glGetUniformLocation(gProgramID, "inColor");
@@ -312,6 +351,7 @@ void render()
 	glDisableVertexAttribArray(gTextureAttribLocation);
 	//Unbind program
 	glUseProgram(NULL);
+	//glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void close()

@@ -144,7 +144,12 @@ bool initGL()
 	//Success flag
 	bool success = true;
 	//Init textures
-	
+
+	glEnable(GL_ALPHA_TEST);
+	glAlphaFunc(GL_GREATER, 0.1f);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	//loadTexture("Resources/imgs/example.bmp");
 	loadTexture("Resources/imgs/dices.png");
 	//glGenerateMipmap(GL_TEXTURE_2D);
@@ -161,6 +166,7 @@ bool initGL()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+
 
 	
 	

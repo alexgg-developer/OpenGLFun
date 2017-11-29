@@ -31,7 +31,8 @@ GLint gTextureAttribLocation = -1;
 GLuint gVBO = 0;
 GLuint gIBO = 0;
 GLuint gVAO = 0;
-GLuint gTexture = 0;
+GLuint gTexture0 = 0;
+GLuint gTexture1 = 0;
 auto t_start = std::chrono::high_resolution_clock::now();
 
 /**
@@ -44,7 +45,52 @@ void logSDLError(std::ostream &os, const std::string &msg)
 	os << msg << " error: " << SDL_GetError() << std::endl;
 }
 
-bool loadTexture(const std::string &path)
+void loadTextures() 
+{
+	GLuint textures[2];
+	glGenTextures(2, textures);
+
+	int width, height;
+	void* image;
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, textures[0]);
+	SDL_Surface* textureSurface = IMG_Load("Resources/imgs/strawberry.jpg");	
+	//SDL_Surface* textureSurface = IMG_Load("Resources/imgs/nehe.png");
+	width = textureSurface->w;
+	height = textureSurface->h;
+	image = textureSurface->pixels;
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB,
+		GL_UNSIGNED_BYTE, image);
+	SDL_FreeSurface(textureSurface);
+	glUniform1i(glGetUniformLocation(gProgramID, "texKitten"), 0);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, textures[1]);
+	textureSurface = IMG_Load("Resources/imgs/nehe.png");
+	//textureSurface = IMG_Load("Resources/imgs/strawberry.jpg");
+	width = textureSurface->w;
+	height = textureSurface->h;
+	image = textureSurface->pixels;
+
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB,
+		GL_UNSIGNED_BYTE, image);
+	SDL_FreeSurface(textureSurface);
+	glUniform1i(glGetUniformLocation(gProgramID, "texPuppy"), 1);
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+}
+
+bool loadTexture(const std::string &path, GLuint format, GLuint texture)
 {
 	/*glGenTextures(1, &gTexture);
 	glBindTexture(GL_TEXTURE_2D, gTexture);
@@ -68,11 +114,11 @@ bool loadTexture(const std::string &path)
 		}
 		else {
 			//SDL_SetColorKey(textureSurface, SDL_TRUE, SDL_MapRGB(textureSurface->format, colorKey.x, colorKey.y, colorKey.z));
-			glGenTextures(1, &gTexture);
-			glBindTexture(GL_TEXTURE_2D, gTexture);
+			glGenTextures(1, &texture);
+			glBindTexture(GL_TEXTURE_2D, texture);
 			//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureSurface->w, textureSurface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureSurface->pixels);
 			//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureSurface->w, textureSurface->h, 0, GL_RGB, GL_UNSIGNED_BYTE, textureSurface->pixels);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureSurface->w, textureSurface->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureSurface->pixels);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureSurface->w, textureSurface->h, 0, format, GL_UNSIGNED_BYTE, textureSurface->pixels);
 			//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, textureSurface->w, textureSurface->h, 0, GL_BGR, GL_UNSIGNED_BYTE, textureSurface->pixels);
 			/*glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
@@ -80,8 +126,13 @@ bool loadTexture(const std::string &path)
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);*/
 			//glBindTexture(GL_TEXTURE_2D, 0);
 		}
+		SDL_FreeSurface(textureSurface);
 	}
-
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	
 	return success;
 }
 
@@ -145,13 +196,12 @@ bool initGL()
 	bool success = true;
 	//Init textures
 
-	glEnable(GL_ALPHA_TEST);
+	/*glEnable(GL_ALPHA_TEST);
 	glAlphaFunc(GL_GREATER, 0.1f);
 	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);*/
 
 	//loadTexture("Resources/imgs/example.bmp");
-	loadTexture("Resources/imgs/dices.png");
 	//glGenerateMipmap(GL_TEXTURE_2D);
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -161,11 +211,6 @@ bool initGL()
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 
 
 	
@@ -191,7 +236,7 @@ bool initGL()
 		glAttachShader(gProgramID, vertexShader);
 		//Create fragment shader
 		GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-		string strFragmentSource = readShader("Resources/shaders/texture.frag");
+		string strFragmentSource = readShader("Resources/shaders/blend.frag");
 		const char* fragmentSource = strFragmentSource.c_str();
 		glShaderSource(fragmentShader, 1, &fragmentSource, NULL);
 		//Compile fragment source
@@ -218,7 +263,17 @@ bool initGL()
 				success = false;
 			}
 			else {
+				glUseProgram(gProgramID); //importante!
 				//Get vertex attribute location
+				//loadTextures();
+
+				glActiveTexture(GL_TEXTURE0);
+				loadTexture("Resources/imgs/nehe.png", GL_RGB, gTexture0);
+				glUniform1i(glGetUniformLocation(gProgramID, "texKitten"), 0);
+				glActiveTexture(GL_TEXTURE1);
+				loadTexture("Resources/imgs/strawberry.jpg", GL_RGB, gTexture1);
+				glUniform1i(glGetUniformLocation(gProgramID, "texPuppy"), 1);
+
 				glBindFragDataLocation(gProgramID, 0, "outColor");
 				gVertexPos2DLocation = glGetAttribLocation(gProgramID, "position");	
 				gColorAttribLocation = glGetAttribLocation(gProgramID, "color");
@@ -256,6 +311,8 @@ bool initGL()
 					glGenBuffers(1, &gIBO);
 					glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, gIBO);
 					glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indexData), indexData, GL_STATIC_DRAW);
+
+					glUseProgram(0);
 
 				}
 			}
@@ -328,11 +385,11 @@ bool init()
 void render()
 {
 	//Clear color buffer
-	glClear(GL_COLOR_BUFFER_BIT);
-
-	//glBindTexture(GL_TEXTURE_2D, gTexture);
+	glClear(GL_COLOR_BUFFER_BIT);	
 	//Bind program
 	glUseProgram(gProgramID);
+	//glBindTexture(GL_TEXTURE_2D, gTexture0);
+	//glBindTexture(GL_TEXTURE_2D, gTexture1);
 	/*GLint uniColor = glGetUniformLocation(gProgramID, "inColor");
 	auto t_now = std::chrono::high_resolution_clock::now();
 	float time = std::chrono::duration_cast<std::chrono::duration<float>>(t_now - t_start).count();

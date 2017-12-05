@@ -124,10 +124,22 @@ xcopy /e /i /y "$(SolutionDir)libs\SDL\SDL2_image-2.0.2\lib\x86\*.dll" "$(OutDir
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="ShaderProgram.cpp" />
+    <ClCompile Include="src\base\Shader.cpp" />
+    <ClCompile Include="src\base\DebugTools.cpp" />
+    <ClCompile Include="src\apps\IApp.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\apps\TexturesApp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resources\example.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ShaderProgram.h" />
+    <ClInclude Include="src\base\Shader.h" />
+    <ClInclude Include="src\base\DebugTools.h" />
+    <ClInclude Include="src\apps\IApp.h" />
+    <ClInclude Include="src\apps\TexturesApp.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

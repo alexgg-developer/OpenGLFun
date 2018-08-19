@@ -60,6 +60,7 @@
     <Import Project="SDL2_Image_x86.props" />
     <Import Project="SDL2_x86.props" />
     <Import Project="GLEW_x86.props" />
+    <Import Project="GLM.props" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
@@ -71,7 +72,9 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>$(SolutionDir)SDL-OpenGL\src;$(SolutionDir)libs\glew-2.1.0\include\GL;$(IncludePath)</IncludePath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -124,22 +127,37 @@ xcopy /e /i /y "$(SolutionDir)libs\SDL\SDL2_image-2.0.2\lib\x86\*.dll" "$(OutDir
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="ShaderProgram.cpp" />
+    <ClCompile Include="src\apps\FrameBufferApp.cpp" />
+    <ClCompile Include="src\base\FrameBufferObject.cpp" />
+    <ClCompile Include="src\base\Mesh.cpp" />
+    <ClCompile Include="src\base\Primitives\CubePrimitive.cpp" />
+    <ClCompile Include="src\base\Renderer.cpp" />
+    <ClCompile Include="src\base\ShaderProgram.cpp" />
     <ClCompile Include="src\base\Shader.cpp" />
     <ClCompile Include="src\base\DebugTools.cpp" />
     <ClCompile Include="src\apps\IApp.cpp" />
+    <ClCompile Include="src\base\VertexBufferLayout.cpp" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\apps\TexturesApp.cpp" />
+    <ClCompile Include="src\base\Texture.cpp" />
+    <ClCompile Include="src\base\TextureManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resources\example.bmp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="ShaderProgram.h" />
+    <ClInclude Include="src\apps\FrameBufferApp.h" />
+    <ClInclude Include="src\base\FrameBufferObject.h" />
+    <ClInclude Include="src\base\IRenderable.h" />
+    <ClInclude Include="src\base\Mesh.h" />
+    <ClInclude Include="src\base\Primitives\CubePrimitive.h" />
+    <ClInclude Include="src\base\Renderer.h" />
+    <ClInclude Include="src\base\ShaderProgram.h" />
     <ClInclude Include="src\base\Shader.h" />
     <ClInclude Include="src\base\DebugTools.h" />
     <ClInclude Include="src\apps\IApp.h" />
-    <ClInclude Include="src\apps\TexturesApp.h" />
+    <ClInclude Include="src\base\Texture.h" />
+    <ClInclude Include="src\base\TextureManager.h" />
+    <ClInclude Include="src\base\VertexBufferLayout.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
